@@ -1,0 +1,24 @@
+{
+  "name": "Developer-Profile-Generator",
+  "version": "1.0.0",
+  "description": "An application that when give a username generates a pdf resume of the info of the user from github",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Brigmu/Developer-Profile-Generator.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Brigmu/Developer-Profile-Generator/issues"
+  },
+  "homepage": "https://github.com/Brigmu/Developer-Profile-Generator#readme",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "inquirer": "^7.0.4"
+  }
+}
