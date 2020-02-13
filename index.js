@@ -1,6 +1,7 @@
 const fs = require('fs');
 const inquirer = require('inquirer');
 const axios = require('axios');
+const convertFactory = require('electron-html-to');
 
 const colors = {
     green: {
@@ -99,12 +100,27 @@ const getInfo = async function() {
                     </body>
                     </html>
                     `
-                    fs.writeFile(`${login}.html`, userHtml, (error) => {
-                        if (error) {
-                            return console.log(error);
+                    // fs.writeFile(`${login}.html`, userHtml, (error) => {
+                    //     if (error) {
+                    //         return console.log(error);
+                    //     }
+                    //     console.log('it happened');
+                    // })
+
+                    var conversion = convertFactory({
+                        converterPath: convertFactory.converters.PDF
+                      });
+                       
+                      conversion({ html: `${userHtml}` }, function(err, result) {
+                        if (err) {
+                          return console.error(err);
                         }
-                        console.log('it happened');
-                    })
+                       
+                        console.log(result.numberOfPages);
+                        console.log(result.logs);
+                        result.stream.pipe(fs.createWriteStream(`./${login}.pdf`));
+                        conversion.kill(); // necessary if you use the electron-server strategy, see bellow for details
+                      });
                 })
         });
     } catch (error) {
