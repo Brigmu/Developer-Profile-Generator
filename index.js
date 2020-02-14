@@ -33,7 +33,7 @@ const colors = {
 
 const getInfo = async function() {
     try {
-        await inquirer.prompt([
+        const {username, color} = await inquirer.prompt([
             {
                 message: 'Enter your github username',
                 name: 'username'
@@ -44,17 +44,17 @@ const getInfo = async function() {
                 name: 'color',
                 choices: ['green', 'blue', 'pink', 'red']
             }
-        ]).then((data) => {
-            const url = `https://api.github.com/users/${data.username}`;
-            // /repos?per_page=100
-            const htmlStart = generateHTML(data);
+        ]);
+        const url = `https://api.github.com/users/${username}`;
+        const urlStarred = `https://api.github.com/users/${username}/starred`;
+        const htmlStart = generateHTML(color);
 
-            axios.get(url)
-                .then((res) => {
-                    console.log(res.data);
-                    const {login, name, avatar_url, html_url, blog, location, bio, public_repos, followers, following} = res.data
+        const response = await axios.get(url);
+        const responseStarred = await axios.get(urlStarred);
+        const starred = responseStarred.data.length;
+        const { login, name, avatar_url, html_url, blog, location, bio, public_repos, followers, following } = response.data
 
-                    const userHtml = htmlStart +`<body>
+        const userHtml = htmlStart + `<body>
                         <div class = 'wrapper'>
                             <div class = 'photo-header'>
                                 <img src ='${avatar_url}'>
@@ -87,10 +87,16 @@ const getInfo = async function() {
                             </div>
                             <div class ='row'>
                                 <div class = 'col'>
-                                    <div class = 'card'>
-                                        <h3>Number following</h3>
-                                        <h4>${following}</h4>
+                                  <div class = 'card'>
+                                      <h3>Number following</h3>
+                                      <h4>${following}</h4>
                                     </div>
+                                </div>
+                                <div class = 'col'>
+                                  <div class = 'card'>
+                                  <h3>Number of stars</h3>
+                                  <h4>${starred}</h4>
+                                  </div>
                                 </div>
                             </div>
                             </div>                        
@@ -100,29 +106,23 @@ const getInfo = async function() {
                     </body>
                     </html>
                     `
-                    // fs.writeFile(`${login}.html`, userHtml, (error) => {
-                    //     if (error) {
-                    //         return console.log(error);
-                    //     }
-                    //     console.log('it happened');
-                    // })
 
-                    var conversion = convertFactory({
-                        converterPath: convertFactory.converters.PDF
-                      });
-                       
-                      conversion({ html: `${userHtml}` }, function(err, result) {
-                        if (err) {
-                          return console.error(err);
-                        }
-                       
-                        console.log(result.numberOfPages);
-                        console.log(result.logs);
-                        result.stream.pipe(fs.createWriteStream(`./${login}.pdf`));
-                        conversion.kill(); // necessary if you use the electron-server strategy, see bellow for details
-                      });
-                })
-        });
+
+      var conversion = convertFactory({
+        converterPath: convertFactory.converters.PDF
+      });
+
+      conversion({ html: `${userHtml}` }, function (err, result) {
+        if (err) {
+          return console.error(err);
+        }
+
+        console.log(result.numberOfPages);
+        console.log(result.logs);
+        result.stream.pipe(fs.createWriteStream(`./${login}.pdf`));
+        conversion.kill(); // necessary if you use the electron-server strategy, see bellow for details
+      });
+
     } catch (error) {
         console.log(error);
         console.log('Please enter a valid github username');
@@ -160,7 +160,7 @@ function generateHTML(data) {
            height: 100%;
            }
            .wrapper {
-           background-color: ${colors[data.color].wrapperBackground};
+           background-color: ${colors[data].wrapperBackground};
            padding-top: 100px;
            }
            body {
@@ -202,8 +202,8 @@ function generateHTML(data) {
            display: flex;
            justify-content: center;
            flex-wrap: wrap;
-           background-color: ${colors[data.color].headerBackground};
-           color: ${colors[data.color].headerColor};
+           background-color: ${colors[data].headerBackground};
+           color: ${colors[data].headerColor};
            padding: 10px;
            width: 95%;
            border-radius: 6px;
@@ -214,7 +214,7 @@ function generateHTML(data) {
            border-radius: 50%;
            object-fit: cover;
            margin-top: -75px;
-           border: 6px solid ${colors[data.color].photoBorderColor};
+           border: 6px solid ${colors[data].photoBorderColor};
            box-shadow: rgba(0, 0, 0, 0.3) 4px 1px 20px 4px;
            }
            .photo-header h1, .photo-header h2 {
@@ -257,8 +257,8 @@ function generateHTML(data) {
            .card {
              padding: 20px;
              border-radius: 6px;
-             background-color: ${colors[data.color].headerBackground};
-             color: ${colors[data.color].headerColor};
+             background-color: ${colors[data].headerBackground};
+             color: ${colors[data].headerColor};
              margin: 20px;
            }
            
